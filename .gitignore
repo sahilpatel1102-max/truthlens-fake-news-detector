@@ -1,0 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.*
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Large datasets
+*.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Allow trained ML models
+!backend/models/
+!backend/models/*.pkl
