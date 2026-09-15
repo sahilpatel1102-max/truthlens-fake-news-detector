@@ -1,70 +1,71 @@
 import joblib
 from pathlib import Path
+import math
 
 
-# Model paths
-MODEL_DIR = Path("backend/models")
+# --------------------------------------------------
+# Load model and vectorizer
+# --------------------------------------------------
 
-vectorizer = joblib.load(
-    MODEL_DIR / "tfidf_vectorizer.pkl"
-)
+MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 
-model = joblib.load(
-    MODEL_DIR / "logistic_regression_model.pkl"
-)
+model = joblib.load(MODEL_DIR / "best_model.pkl")
+vectorizer = joblib.load(MODEL_DIR / "best_tfidf_vectorizer.pkl")
 
 
-def predict_news(title, article_text):
+# --------------------------------------------------
+# Prediction function
+# --------------------------------------------------
+
+def predict_news(title: str, article_text: str):
     """
-    Predict whether a news article is fake or real.
+    Predict whether a news article is Fake or Real.
+
+    Returns:
+        prediction
+        fake_score
+        real_score
     """
 
-    # Combine headline and article
     full_text = title + " " + article_text
 
     # Convert text into TF-IDF features
     text_tfidf = vectorizer.transform([full_text])
 
-    # Make prediction
+    # Predict class
     prediction = model.predict(text_tfidf)[0]
 
-    # Get model scores
+    # Calibrated SVM provides probabilities
     probabilities = model.predict_proba(text_tfidf)[0]
 
-    fake_probability = probabilities[0]
-    real_probability = probabilities[1]
+    fake_score = probabilities[0]
+    real_score = probabilities[1]
 
     if prediction == 0:
         label = "Fake"
     else:
         label = "Real"
 
-    return label, fake_probability, real_probability
+    return {
+        "prediction": label,
+        "fake_score": round(float(fake_score), 4),
+        "real_score": round(float(real_score), 4),
+    }
 
+
+# --------------------------------------------------
+# Test from command line
+# --------------------------------------------------
 
 if __name__ == "__main__":
 
-    print("=" * 50)
-    print("FAKE NEWS DETECTOR")
-    print("=" * 50)
+    title = input("Enter headline: ")
+    article_text = input("Enter article text: ")
 
-    title = input("\nEnter news headline: ")
+    result = predict_news(title, article_text)
 
-    article_text = input(
-        "\nEnter article text: "
-    )
-
-    label, fake_probability, real_probability = predict_news(
-        title,
-        article_text
-    )
-
-    print("\n" + "=" * 50)
-    print("RESULT")
-    print("=" * 50)
-
-    print(f"Prediction: {label}")
-    print(f"Fake score: {fake_probability * 100:.2f}%")
-    print(f"Real score: {real_probability * 100:.2f}%")
-
-    print("=" * 50)
+    print("\nPrediction Result")
+    print("-------------------------")
+    print(f"Prediction: {result['prediction']}")
+    print(f"Fake Score: {result['fake_score'] * 100:.2f}%")
+    print(f"Real Score: {result['real_score'] * 100:.2f}%")

@@ -55,12 +55,14 @@ app.add_middleware(
 MODEL_DIR = Path(__file__).resolve().parent.parent / "models"
 
 vectorizer = joblib.load(
-    MODEL_DIR / "tfidf_vectorizer.pkl"
+    MODEL_DIR / "best_tfidf_vectorizer.pkl"
 )
 
 model = joblib.load(
-    MODEL_DIR / "logistic_regression_model.pkl"
+    MODEL_DIR / "best_model.pkl"
 )
+
+
 
 
 # ============================================================
@@ -94,6 +96,7 @@ def analyze_news(news: NewsRequest):
     # ========================================================
     # 1. ML MODEL
     # ========================================================
+    
 
     full_text = news.title + " " + news.article_text
 
@@ -111,7 +114,7 @@ def analyze_news(news: NewsRequest):
     else:
         label = "Real"
 
-
+    
     # ========================================================
     # 2. GOOGLE FACT CHECK
     # ========================================================
